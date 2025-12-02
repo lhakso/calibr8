@@ -430,10 +430,18 @@ function renderProfile() {
 
 // Modal
 function showPredictionDetail(id) {
+    console.log('showPredictionDetail called with id:', id);
+    console.log('Available predictions:', predictions.length);
     const prediction = predictions.find(p => p.id === id);
-    if (!prediction) return;
+    console.log('Found prediction:', prediction);
+
+    if (!prediction) {
+        console.error('Prediction not found!');
+        return;
+    }
 
     const modal = document.getElementById('prediction-modal');
+    console.log('Modal element:', modal);
     const detail = document.getElementById('prediction-detail');
 
     detail.innerHTML = `
@@ -489,12 +497,14 @@ function showPredictionDetail(id) {
         });
     });
 
+    modal.classList.remove('hidden');
     modal.classList.add('active');
 }
 
 function closeModal() {
     const modal = document.getElementById('prediction-modal');
     modal.classList.remove('active');
+    modal.classList.add('hidden');
 }
 
 // Close modal on background click

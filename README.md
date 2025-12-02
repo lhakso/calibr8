@@ -2,8 +2,6 @@
 
 A full-stack web application for tracking predictions and improving calibration using Django REST Framework, Google Gemini AI, and modern web technologies. Deployed on Azure with full containerization support.
 
-![Architecture](assets/architecture.png)
-
 ---
 
 ## 1) Executive Summary
@@ -55,7 +53,8 @@ This project demonstrates multiple concepts from the course:
 
 ### Architecture Diagram
 
-![alt text](assets/arch.png "Architecture Diagram")
+![Architecture Diagram](assets/arch.png)
+
 ### Data Models & Services
 
 **Models:**
