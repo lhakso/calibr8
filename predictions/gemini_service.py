@@ -14,7 +14,8 @@ class GeminiService:
             raise ValueError("GEMINI_API_KEY is not configured in settings")
 
         genai.configure(api_key=settings.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        # Use Gemini 2.5 Flash Lite preview model
+        self.model = genai.GenerativeModel('gemini-2.5-flash-lite-preview-09-2025')
 
     def generate_prediction_insight(self, prediction_data):
         """
