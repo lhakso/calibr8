@@ -116,12 +116,13 @@ class GeminiService:
 
         "{description}"
 
-        Suggest how to make this prediction more:
-        1. Specific and measurable
+        Provide 2-3 SHORT, CONCISE suggestions (1-2 sentences each) to make this prediction:
+        1. More specific and measurable
         2. Time-bound
         3. Objectively verifiable
 
-        Provide 2-3 concrete suggestions in a friendly, helpful tone.
+        Format: Use simple bullet points (•) without markdown formatting.
+        Keep it brief and actionable.
         """
 
         try:

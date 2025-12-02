@@ -55,12 +55,18 @@ function initPredictionForm() {
     newBtn.addEventListener('click', () => {
         form.classList.remove('hidden');
         newBtn.style.display = 'none';
+        // Clear AI suggestions when opening form
+        document.getElementById('ai-suggestions').classList.add('hidden');
+        document.getElementById('ai-suggestions').innerHTML = '';
     });
 
     cancelBtn.addEventListener('click', () => {
         form.classList.add('hidden');
         newBtn.style.display = 'block';
         createForm.reset();
+        // Clear AI suggestions when canceling
+        document.getElementById('ai-suggestions').classList.add('hidden');
+        document.getElementById('ai-suggestions').innerHTML = '';
     });
 
     probabilitySlider.addEventListener('input', (e) => {
@@ -143,6 +149,9 @@ async function createPrediction() {
         document.getElementById('prediction-form').classList.add('hidden');
         document.getElementById('new-prediction-btn').style.display = 'block';
         document.getElementById('probability-value').textContent = '50%';
+        // Clear AI suggestions
+        document.getElementById('ai-suggestions').classList.add('hidden');
+        document.getElementById('ai-suggestions').innerHTML = '';
 
         await loadPredictions();
         await loadStats();
@@ -327,11 +336,16 @@ function renderPredictions() {
     `).join('');
 
     // Add click event listeners
-    container.querySelectorAll('.prediction-card').forEach(card => {
-        card.addEventListener('click', () => {
+    const cards = container.querySelectorAll('.prediction-card');
+    console.log(`Adding click handlers to ${cards.length} prediction cards`);
+    cards.forEach(card => {
+        card.addEventListener('click', (e) => {
             const predictionId = card.dataset.predictionId;
+            console.log('Prediction card clicked:', predictionId);
             showPredictionDetail(predictionId);
         });
+        // Also add a visible cursor pointer
+        card.style.cursor = 'pointer';
     });
 }
 
