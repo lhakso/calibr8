@@ -192,6 +192,8 @@ Automated tests cover creating, resolving, stats, and profile management. All CR
 - Historical performance graphs
 
 **Technical improvements:**
+- Summary renders in Markdown
+- Summary AI bot can see raw data table
 - Add authentication for multi-user support
 - Rate limiting on AI endpoints
 - Redis for caching stats
