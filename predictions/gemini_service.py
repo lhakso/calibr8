@@ -33,25 +33,33 @@ class GeminiService:
         Returns:
             str: Generated insight text
         """
-        prompt = f"""
-        Analyze this prediction and provide a brief insight:
+        prob = prediction_data.get('probability') * 100
+        resolved = prediction_data.get('resolved')
 
-        Prediction: {prediction_data.get('description')}
-        Predicted Probability: {prediction_data.get('probability') * 100:.1f}%
-        Status: {'Resolved' if prediction_data.get('resolved') else 'Pending'}
-        """
+        if resolved:
+            outcome = 'happened' if prediction_data.get('outcome') else 'did not happen'
+            prompt = f"""Quick analysis of this prediction:
 
-        if prediction_data.get('resolved'):
-            outcome = 'Happened' if prediction_data.get('outcome') else 'Did not happen'
-            prompt += f"\nActual Outcome: {outcome}"
+Prediction: "{prediction_data.get('description')}"
+Your confidence: {prob:.0f}%
+What actually happened: It {outcome}
 
-        prompt += """
+Write 2-3 short sentences in plain text (no markdown) analyzing:
+1. Was your {prob:.0f}% confidence appropriate?
+2. One specific insight about this prediction
 
-        Provide a 2-3 sentence insight about this prediction, focusing on:
-        - The calibration (was the probability appropriate?)
-        - What this tells us about the predictor's judgment
-        - Any interesting observations
-        """
+Be conversational and helpful."""
+        else:
+            prompt = f"""This prediction is still pending:
+
+"{prediction_data.get('description')}"
+Predicted at {prob:.0f}% confidence
+
+Write 1-2 short sentences in plain text (no markdown) about:
+- Whether the confidence level seems reasonable
+- What to watch for when it resolves
+
+Be brief and conversational."""
 
         try:
             response = self.model.generate_content(prompt)
@@ -72,28 +80,33 @@ class GeminiService:
             str: Generated calibration summary
         """
         brier_score = stats_data.get('brier_score', 0)
+        total = stats_data.get('total_predictions', 0)
+        resolved = stats_data.get('resolved_predictions', 0)
         bins = stats_data.get('calibration_bins', [])
 
-        prompt = f"""
-        Analyze this prediction calibration data and provide insights:
-
-        Overall Brier Score: {brier_score:.4f}
-
-        Calibration by confidence level:
-        """
-
+        # Build calibration data
+        calibration_data = ""
         for bin_data in bins:
-            prompt += f"""
-        - {bin_data['range']}: Predicted {bin_data['avg_predicted']:.1f}%, Actually {bin_data['actual_frequency']:.1f}% ({bin_data['count']} predictions)
-        """
+            calibration_data += f"{bin_data['range']}: Predicted {bin_data['avg_predicted']:.1f}%, Actually {bin_data['actual_frequency']:.1f}% ({bin_data['count']} predictions)\n"
 
-        prompt += """
+        prompt = f"""You are analyzing prediction calibration for someone tracking their forecasting accuracy.
 
-        Provide a 3-4 sentence summary:
-        - Overall calibration quality (Brier score interpretation)
-        - Which confidence ranges are well-calibrated vs over/under-confident
-        - Specific recommendations for improvement
-        """
+DATA:
+- Total predictions: {total}
+- Resolved predictions: {resolved}
+- Brier Score: {brier_score:.4f} (lower is better, 0 = perfect, 0.25 = random)
+
+CALIBRATION BY CONFIDENCE LEVEL:
+{calibration_data if calibration_data else "Not enough data yet (need at least 3 predictions per bin)"}
+
+TASK: Write a brief, friendly 3-4 sentence analysis in plain text (no markdown, no asterisks, no formatting).
+
+Focus on:
+1. What the Brier score means for their accuracy
+2. Which confidence ranges show good/poor calibration
+3. One specific actionable tip to improve
+
+Keep it conversational and encouraging. Use simple percentages and comparisons."""
 
         try:
             response = self.model.generate_content(prompt)
