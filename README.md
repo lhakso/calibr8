@@ -155,6 +155,8 @@ python test_api.py
 
 **Self-Hosted LLM** - Looked at running Llama on the cloud instance. Gemini is free, easier, and better performance without GPU overhead.
 
+**PostgreSQL** - More robust than SQLite but adds complexity. SQLite is fine for single-user demo.
+
 ### Tradeoffs
 
 **Performance** - SQLite works fine for single-user but wouldn't scale for production multi-user.
@@ -208,13 +210,13 @@ python test_api.py
 
 **Statistics Page:**
 ![Statistics Page](assets/stats.png)
-*Brier score, calibration chart, and AI insights. Chart compares predicted vs. actual outcomes across confidence ranges.*
+*Brier score, calibration chart, and AI insights.*
 ### Performance
 
 - Container: ~450MB, builds in 2-3 minutes
-- API responses: <100ms
+- API responses: its pretty fast
 - AI insights: 1-3 seconds
-- Handles hundreds of predictions fine
+- Should handle hundreds of predictions fine
 
 ### Testing
 
@@ -239,7 +241,7 @@ Automated tests cover creating, resolving, stats, and profile management. All CR
 
 ---
 
-## 7) Links (Required)
+## 7) Links
 
 - **GitHub Repository:** https://github.com/lhakso/calibr8
 - **Public Cloud App:** https://calibr8-app.azurewebsites.net

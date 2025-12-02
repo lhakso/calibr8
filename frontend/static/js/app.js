@@ -148,9 +148,23 @@ async function createPrediction() {
         });
 
         if (!response.ok) {
-            const errorData = await response.text();
+            const errorData = await response.json();
             console.error('Server error:', response.status, errorData);
-            throw new Error(`Failed to create prediction: ${response.status} - ${errorData}`);
+
+            // Extract validation errors
+            let errorMessage = 'Failed to create prediction:\n';
+            if (errorData) {
+                for (const [field, errors] of Object.entries(errorData)) {
+                    if (Array.isArray(errors)) {
+                        errorMessage += `\n${field}: ${errors.join(', ')}`;
+                    } else {
+                        errorMessage += `\n${field}: ${errors}`;
+                    }
+                }
+            }
+
+            alert(errorMessage);
+            return;
         }
 
         // Reset form and reload
@@ -166,7 +180,7 @@ async function createPrediction() {
         await loadStats();
     } catch (error) {
         console.error('Error creating prediction:', error);
-        alert('Failed to create prediction. Check console for details.');
+        alert('Failed to create prediction. Please check your inputs and try again.');
     }
 }
 
@@ -287,9 +301,9 @@ async function getAISuggestions() {
             <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
                 Click any suggestion to use it:
             </p>
-            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div id="suggestions-container" style="display: flex; flex-direction: column; gap: 0.75rem;">
                 ${data.suggestions.map((suggestion, index) => `
-                    <div class="suggestion-card" style="
+                    <div class="suggestion-card" data-index="${index}" style="
                         padding: 1rem;
                         border: 2px solid var(--border-color);
                         border-radius: 8px;
@@ -298,8 +312,7 @@ async function getAISuggestions() {
                         background: var(--card-bg);
                     "
                     onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)'"
-                    onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)'"
-                    onclick="useSuggestion(${index}, ${escapeHtml(JSON.stringify(suggestion))})">
+                    onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)'">
                         <div style="font-weight: 500; margin-bottom: 0.5rem;">
                             ${escapeHtml(suggestion.description)}
                         </div>
@@ -311,6 +324,14 @@ async function getAISuggestions() {
             </div>
         `;
         suggestionsDiv.classList.remove('hidden');
+
+        // Add click handlers to suggestion cards
+        const suggestionCards = suggestionsDiv.querySelectorAll('.suggestion-card');
+        suggestionCards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                useSuggestion(data.suggestions[index]);
+            });
+        });
     } catch (error) {
         console.error('Error getting AI suggestions:', error);
         suggestionsDiv.innerHTML = `
@@ -325,7 +346,8 @@ async function getAISuggestions() {
 }
 
 // Function to use a suggestion (auto-fill the form)
-function useSuggestion(index, suggestion) {
+function useSuggestion(suggestion) {
+    console.log('Using suggestion:', suggestion);
     document.getElementById('description').value = suggestion.description;
     document.getElementById('probability').value = suggestion.confidence;
     document.getElementById('probability-value').textContent = `${suggestion.confidence}%`;
@@ -333,7 +355,7 @@ function useSuggestion(index, suggestion) {
     // Hide suggestions after selection
     document.getElementById('ai-suggestions').classList.add('hidden');
 
-    // Scroll to the form
+    // Focus on the description field
     document.getElementById('description').focus();
 }
 
