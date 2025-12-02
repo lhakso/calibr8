@@ -163,7 +163,7 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS settings for local development
+# CORS settings for local development and production
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:8080",
@@ -171,6 +171,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://[::1]:8080",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
+    "https://calibr8-app.azurewebsites.net",
 ]
 
 # Allow credentials for CORS
@@ -202,6 +203,7 @@ CORS_ALLOW_HEADERS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:8080",
     "http://127.0.0.1:8080",
+    "https://calibr8-app.azurewebsites.net",
 ]
 
 # REST Framework settings
