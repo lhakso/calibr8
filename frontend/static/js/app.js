@@ -14,10 +14,24 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs();
     initPredictionForm();
     initFilters();
+    initPredictionCardClicks();
     loadPredictions();
     loadStats();
     loadProfile();
 });
+
+// Event delegation for prediction card clicks
+function initPredictionCardClicks() {
+    const container = document.getElementById('predictions-list');
+    container.addEventListener('click', (e) => {
+        const card = e.target.closest('.prediction-card');
+        if (card) {
+            const predictionId = card.dataset.predictionId;
+            console.log('Prediction card clicked:', predictionId);
+            showPredictionDetail(predictionId);
+        }
+    });
+}
 
 // Tab Management
 function initTabs() {
@@ -313,7 +327,7 @@ function renderPredictions() {
     }
 
     container.innerHTML = filtered.map(prediction => `
-        <div class="prediction-card ${prediction.resolved ? 'resolved' : ''}" data-prediction-id="${prediction.id}">
+        <div class="prediction-card ${prediction.resolved ? 'resolved' : ''}" data-prediction-id="${prediction.id}" style="cursor: pointer;">
             <div class="prediction-header">
                 <div class="prediction-description">${escapeHtml(prediction.description)}</div>
                 <div class="prediction-probability">${Math.round(prediction.probability * 100)}%</div>
@@ -334,19 +348,6 @@ function renderPredictions() {
             </div>
         </div>
     `).join('');
-
-    // Add click event listeners
-    const cards = container.querySelectorAll('.prediction-card');
-    console.log(`Adding click handlers to ${cards.length} prediction cards`);
-    cards.forEach(card => {
-        card.addEventListener('click', (e) => {
-            const predictionId = card.dataset.predictionId;
-            console.log('Prediction card clicked:', predictionId);
-            showPredictionDetail(predictionId);
-        });
-        // Also add a visible cursor pointer
-        card.style.cursor = 'pointer';
-    });
 }
 
 function renderStats() {
