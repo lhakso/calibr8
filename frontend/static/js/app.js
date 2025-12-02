@@ -304,7 +304,7 @@ function renderPredictions() {
     }
 
     container.innerHTML = filtered.map(prediction => `
-        <div class="prediction-card ${prediction.resolved ? 'resolved' : ''}" onclick="showPredictionDetail('${prediction.id}')">
+        <div class="prediction-card ${prediction.resolved ? 'resolved' : ''}" data-prediction-id="${prediction.id}">
             <div class="prediction-header">
                 <div class="prediction-description">${escapeHtml(prediction.description)}</div>
                 <div class="prediction-probability">${Math.round(prediction.probability * 100)}%</div>
@@ -325,6 +325,14 @@ function renderPredictions() {
             </div>
         </div>
     `).join('');
+
+    // Add click event listeners
+    container.querySelectorAll('.prediction-card').forEach(card => {
+        card.addEventListener('click', () => {
+            const predictionId = card.dataset.predictionId;
+            showPredictionDetail(predictionId);
+        });
+    });
 }
 
 function renderStats() {
@@ -435,21 +443,37 @@ function showPredictionDetail(id) {
 
         ${!prediction.resolved ? `
             <div class="resolve-actions">
-                <button class="btn btn-success" onclick="resolvePrediction('${prediction.id}', true)">
+                <button class="btn btn-success" data-action="resolve-true" data-id="${prediction.id}">
                     ✓ It Happened
                 </button>
-                <button class="btn btn-danger" onclick="resolvePrediction('${prediction.id}', false)">
+                <button class="btn btn-danger" data-action="resolve-false" data-id="${prediction.id}">
                     ✗ It Didn't Happen
                 </button>
             </div>
         ` : ''}
 
         <div style="margin-top: 2rem;">
-            <button class="btn btn-danger" onclick="deletePrediction('${prediction.id}')">
+            <button class="btn btn-danger" data-action="delete" data-id="${prediction.id}">
                 Delete Prediction
             </button>
         </div>
     `;
+
+    // Add event listeners to modal buttons
+    detail.querySelectorAll('button[data-action]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const action = btn.dataset.action;
+            const id = btn.dataset.id;
+
+            if (action === 'resolve-true') {
+                resolvePrediction(id, true);
+            } else if (action === 'resolve-false') {
+                resolvePrediction(id, false);
+            } else if (action === 'delete') {
+                deletePrediction(id);
+            }
+        });
+    });
 
     modal.classList.add('active');
 }
