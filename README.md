@@ -1,20 +1,19 @@
 # 🎯 Calibr8: Prediction Tracking & Calibration Analysis
 
-A full-stack web application for tracking predictions and improving calibration using Django REST Framework, Google Gemini AI, and modern web technologies. Deployed on Azure with full containerization support.
+A full-stack web application for tracking predictions and improving calibration using Django REST Framework, Google Gemini AI, and javascript, css frontend. Deployed on Azure with full containerization support.
 
 ---
 
-## 1) Executive Summary
+## 1) Summary
 
 ### Problem
-People make predictions constantly in daily life and professional settings, but rarely track their accuracy or learn from their mistakes. This leads to overconfidence, poor decision-making, and a lack of metacognitive awareness. Professionals in fields like data science, finance, and project management need a systematic way to track and improve their probabilistic reasoning.
+A few weeks ago I had watched a video on how people make predictions constantly in daily life and professional settings, but rarely track their accuracy or learn from their mistakes. This leads to overconfidence, poor decision-making, and a lack of awareness. I wanted a way to track my own predictions, see how well-calibrated I am, and get insights on how to improve.
 
 ### Solution
 Calibr8 is a web-based prediction tracking platform that allows users to:
 - Record predictions with confidence levels (0-100%)
 - Mark predictions as resolved with actual outcomes
 - Analyze calibration quality through Brier scores and visual calibration charts
-- Receive AI-powered insights about prediction patterns using Google's Gemini API
 - Track historical performance and identify areas for improvement
 
 The system provides immediate feedback on calibration quality, helping users become better forecasters through quantitative analysis and personalized AI recommendations.
@@ -27,26 +26,19 @@ The system provides immediate feedback on calibration quality, helping users bec
 
 This project demonstrates multiple concepts from the course:
 
-1. **REST API Development** (Django REST Framework)
-   - Full CRUD operations with ViewSets
-   - Custom actions (@action decorator) for domain-specific operations
-   - Serialization and validation patterns
-   - CORS configuration for frontend-backend separation
+1. **API Development** (Django REST Framework)
+   - Full CRUD operations
 
 2. **LLM Integration** (Google Gemini API)
-   - Service layer abstraction for AI interactions
    - Structured prompts for prediction insights
-   - Calibration analysis summaries
    - Prediction refinement suggestions
 
 3. **Containerization** (Docker)
-   - Multi-stage Dockerfile with production optimizations
-   - Docker Compose for local development with PostgreSQL
+   - Docker Compose for local development
    - Environment-based configuration
    - Static file serving in containers
 
 4. **Cloud Deployment** (Azure App Service)
-   - Platform-as-a-Service deployment
    - Environment variable management
    - GitHub Actions CI/CD pipeline
    - Static file serving with WhiteNoise

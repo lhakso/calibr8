@@ -97,7 +97,7 @@ az webapp config appsettings set \
 az webapp config appsettings set \
   --resource-group calibr8-rg \
   --name calibr8-app \
-  --settings GEMINI_API_KEY="AIzaSyBTLcl669_TpBJxsgyZ9VDSoLcfccxqE_s"
+  --settings GEMINI_API_KEY="your-gemini-api-key-here"
 
 # PostgreSQL configuration (if using Azure PostgreSQL)
 az webapp config appsettings set \
@@ -158,7 +158,7 @@ The following environment variables are configured in your `.env` file locally a
 | `SECRET_KEY` | Django secret key | Generate with `python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'` |
 | `DEBUG` | Debug mode | `False` for production |
 | `ALLOWED_HOSTS` | Allowed host names | `calibr8-app.azurewebsites.net,*.azurewebsites.net` |
-| `GEMINI_API_KEY` | Google Gemini API key | `AIzaSyBTLcl669_TpBJxsgyZ9VDSoLcfccxqE_s` |
+| `GEMINI_API_KEY` | Google Gemini API key | Your Gemini API key |
 | `AZURE_POSTGRESQL_HOST` | PostgreSQL host | `calibr8-db-server.postgres.database.azure.com` |
 | `AZURE_POSTGRESQL_NAME` | Database name | `calibr8db` |
 | `AZURE_POSTGRESQL_USER` | Database user | `calibr8admin` |
