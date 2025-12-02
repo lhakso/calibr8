@@ -28,7 +28,7 @@ The system provides immediate feedback on calibration quality, helping users bec
 
 **LLM Integration** - Google Gemini API generates insights about calibration patterns and suggests improvements to predictions.
 
-**Docker** - Fully containerized with support for both SQLite (dev) and PostgreSQL (production).
+**Docker** - Fully containerized with SQLite database.
 
 **Cloud Deployment** - Deployed on Azure App Service with GitHub auto-deployment.
 
@@ -124,15 +124,6 @@ pip install -r requirements.txt
 python test_api.py
 ```
 
-### Docker Compose (with PostgreSQL)
-
-```bash
-# Start full stack with database
-docker-compose up --build
-
-# Access at http://localhost:8000
-```
-
 ---
 
 ## 4) Design Decisions
@@ -149,11 +140,11 @@ docker-compose up --build
 
 ### Tradeoffs
 
-**Performance** - SQLite works fine for single-user but wouldn't scale. That's why PostgreSQL is an option for Azure.
+**Performance** - SQLite works fine for single-user but wouldn't scale for production multi-user.
 
 **Complexity** - Kept it simple - no Redis, no Celery, no build system. Just what's needed.
 
-**Cost** - Azure runs about $25/month (without PostgreSQL it's just for the app service).
+**Cost** - Azure App Service runs about $25/month on the B1 tier.
 
 ### Security
 
@@ -198,7 +189,6 @@ Automated tests cover creating, resolving, stats, and profile management. All CR
 **Features I'd like to add:**
 - Data export (JSON/CSV)
 - Prediction categories and tags
-- Email reminders for unresolved predictions
 - Historical performance graphs
 
 **Technical improvements:**
