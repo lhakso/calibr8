@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import Prediction, UserProfile
 from .serializers import PredictionSerializer, UserProfileSerializer
+from .gemini_service import get_gemini_service
 
 
 class PredictionViewSet(viewsets.ModelViewSet):
@@ -26,13 +27,18 @@ class PredictionViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def stats(self, request):
-        predictions = Prediction.objects.filter(resolved=True, outcome__isnull=False)
+        all_predictions = Prediction.objects.all()
+        predictions = all_predictions.filter(resolved=True, outcome__isnull=False)
+
+        total_predictions = all_predictions.count()
+        resolved_predictions = predictions.count()
 
         if not predictions.exists():
             return Response({
-                'count': 0,
+                'total_predictions': total_predictions,
+                'resolved_predictions': 0,
                 'brier_score': None,
-                'bins': []
+                'calibration_bins': []
             })
 
         # Calculate Brier score
@@ -57,15 +63,72 @@ class PredictionViewSet(viewsets.ModelViewSet):
                 bins.append({
                     'range': f"{int(lower * 100)}-{int(upper * 100)}%",
                     'count': len(bin_predictions),
-                    'avg_predicted': round(avg_predicted, 3),
-                    'actual_frequency': round(actual_frequency, 3)
+                    'avg_predicted': round(avg_predicted * 100, 1),
+                    'actual_frequency': round(actual_frequency * 100, 1)
                 })
 
-        return Response({
-            'count': predictions.count(),
-            'brier_score': round(brier_score, 3),
-            'bins': bins
-        })
+        stats_data = {
+            'total_predictions': total_predictions,
+            'resolved_predictions': resolved_predictions,
+            'brier_score': round(brier_score, 4),
+            'calibration_bins': bins
+        }
+
+        # Generate AI summary if requested
+        if request.query_params.get('ai_summary') == 'true' and resolved_predictions > 0:
+            try:
+                gemini = get_gemini_service()
+                ai_summary = gemini.generate_calibration_summary(stats_data)
+                stats_data['ai_summary'] = ai_summary
+            except Exception as e:
+                stats_data['ai_summary'] = f"AI summary unavailable: {str(e)}"
+
+        return Response(stats_data)
+
+    @action(detail=False, methods=['post'])
+    def ai_suggest(self, request):
+        """Get AI suggestions for improving a prediction description"""
+        description = request.data.get('description')
+
+        if not description:
+            return Response(
+                {'error': 'description is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            gemini = get_gemini_service()
+            suggestions = gemini.suggest_prediction_refinement(description)
+            return Response({'suggestions': suggestions})
+        except Exception as e:
+            return Response(
+                {'error': f'AI service error: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    @action(detail=True, methods=['get'])
+    def ai_insight(self, request, pk=None):
+        """Get AI insight for a specific prediction"""
+        prediction = self.get_object()
+
+        prediction_data = {
+            'description': prediction.description,
+            'probability': prediction.probability,
+            'resolved': prediction.resolved,
+            'outcome': prediction.outcome,
+            'created_at': prediction.created_at,
+            'resolve_by': prediction.resolve_by
+        }
+
+        try:
+            gemini = get_gemini_service()
+            insight = gemini.generate_prediction_insight(prediction_data)
+            return Response({'insight': insight})
+        except Exception as e:
+            return Response(
+                {'error': f'AI service error: {str(e)}'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class UserProfileViewSet(viewsets.ModelViewSet):

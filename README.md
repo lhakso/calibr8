@@ -55,36 +55,7 @@ This project demonstrates multiple concepts from the course:
 
 ### Architecture Diagram
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        User Browser                          │
-│                     (Vanilla JavaScript)                     │
-└────────────────────────┬────────────────────────────────────┘
-                         │ HTTP/JSON API
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     Django REST API                          │
-│  ┌────────────────┐  ┌────────────────┐  ┌───────────────┐ │
-│  │  Predictions   │  │   Profile      │  │   Statistics  │ │
-│  │   ViewSet      │  │   ViewSet      │  │    Actions    │ │
-│  └────────┬───────┘  └────────┬───────┘  └───────┬───────┘ │
-│           │                   │                   │          │
-│  ┌────────▼───────────────────▼───────────────────▼───────┐ │
-│  │             Django ORM (Models Layer)                   │ │
-│  └────────┬────────────────────────────────────────────────┘ │
-└───────────┼─────────────────────────────────────────────────┘
-            │
-┌───────────▼─────────────────┐       ┌────────────────────────┐
-│  SQLite (Local Dev) /       │       │   Google Gemini API    │
-│  PostgreSQL (Production)    │       │  ┌──────────────────┐  │
-│  ┌──────────────────────┐   │       │  │ Prediction       │  │
-│  │  Predictions Table   │   │       │  │ Insights         │  │
-│  │  UserProfile Table   │   │◄──────┼──│ Calibration      │  │
-│  └──────────────────────┘   │       │  │ Summaries        │  │
-└─────────────────────────────┘       │  └──────────────────┘  │
-                                      └────────────────────────┘
-```
-
+![alt text](assets/arch.png "Architecture Diagram")
 ### Data Models & Services
 
 **Models:**

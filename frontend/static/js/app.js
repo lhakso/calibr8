@@ -132,7 +132,11 @@ async function createPrediction() {
             body: JSON.stringify(data),
         });
 
-        if (!response.ok) throw new Error('Failed to create prediction');
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Server error:', response.status, errorData);
+            throw new Error(`Failed to create prediction: ${response.status} - ${errorData}`);
+        }
 
         // Reset form and reload
         document.getElementById('create-prediction-form').reset();
@@ -144,7 +148,7 @@ async function createPrediction() {
         await loadStats();
     } catch (error) {
         console.error('Error creating prediction:', error);
-        alert('Failed to create prediction. Please try again.');
+        alert('Failed to create prediction. Check console for details.');
     }
 }
 
@@ -190,7 +194,8 @@ async function deletePrediction(id) {
 
 async function loadStats() {
     try {
-        const response = await fetch(`${API_BASE_URL}/predictions/stats/`);
+        // Request stats with AI summary
+        const response = await fetch(`${API_BASE_URL}/predictions/stats/?ai_summary=true`);
         if (!response.ok) throw new Error('Failed to load stats');
         stats = await response.json();
         renderStats();
@@ -251,13 +256,32 @@ async function getAISuggestions(description) {
     btn.disabled = true;
     btn.textContent = 'Getting suggestions...';
 
-    // Note: This endpoint doesn't exist yet, we'd need to add it
-    // For now, show a placeholder
-    suggestionsDiv.innerHTML = `
-        <h4>AI Suggestions</h4>
-        <p><em>AI-powered suggestions coming soon! This will help make your predictions more specific and measurable.</em></p>
-    `;
-    suggestionsDiv.classList.remove('hidden');
+    try {
+        const response = await fetch(`${API_BASE_URL}/predictions/ai_suggest/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ description }),
+        });
+
+        if (!response.ok) throw new Error('Failed to get AI suggestions');
+
+        const data = await response.json();
+
+        suggestionsDiv.innerHTML = `
+            <h4>✨ AI Suggestions</h4>
+            <div style="white-space: pre-wrap;">${escapeHtml(data.suggestions)}</div>
+        `;
+        suggestionsDiv.classList.remove('hidden');
+    } catch (error) {
+        console.error('Error getting AI suggestions:', error);
+        suggestionsDiv.innerHTML = `
+            <h4>AI Suggestions</h4>
+            <p style="color: var(--danger-color);">Failed to get suggestions. Make sure your GEMINI_API_KEY is configured.</p>
+        `;
+        suggestionsDiv.classList.remove('hidden');
+    }
 
     btn.disabled = false;
     btn.textContent = 'Get AI Suggestions';
@@ -348,10 +372,17 @@ function renderStats() {
             </div>
         ` : ''}
 
-        <div class="ai-summary">
-            <h3>AI-Powered Insights</h3>
-            <p><em>AI-powered calibration insights coming soon! This will analyze your prediction patterns and provide personalized recommendations.</em></p>
-        </div>
+        ${stats.ai_summary ? `
+            <div class="ai-summary">
+                <h3>✨ AI-Powered Insights</h3>
+                <div style="white-space: pre-wrap; line-height: 1.8;">${escapeHtml(stats.ai_summary)}</div>
+            </div>
+        ` : stats.resolved_predictions > 0 ? `
+            <div class="ai-summary">
+                <h3>AI-Powered Insights</h3>
+                <p style="color: var(--danger-color);"><em>AI summary unavailable. Check if GEMINI_API_KEY is configured.</em></p>
+            </div>
+        ` : ''}
     `;
 }
 
