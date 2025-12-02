@@ -24,17 +24,26 @@ The system provides immediate feedback on calibration quality, helping users bec
 
 ### Course Concepts
 
-**Django REST Framework** - I've built several Django apps before, so this made sense. Uses ViewSets for CRUD operations and custom actions for domain logic like calculating Brier scores.
+This project demonstrates multiple concepts from the course:
 
-**LLM Integration** - Google Gemini API generates insights about calibration patterns and suggests improvements to predictions.
+**Version Control with Git** - Git workflow with commits, branches, and GitHub integration.
 
-**Docker** - Fully containerized with SQLite database.
+**Scripting & Environments** - Environment variables via `.env` files, virtual environments, automated startup scripts.
 
-**Cloud Deployment** - Deployed on Azure App Service with GitHub auto-deployment.
+**APIs** - Django REST Framework API with ViewSets for CRUD, custom actions for Brier scores and prediction resolution, external Gemini API integration.
+
+**Containers** - Dockerized with single Dockerfile for reproducible builds.
+
+**Cloud Deployment (Azure)** - Azure App Service with GitHub Actions CI/CD for automatic deployments.
+
+**CI/CD Pipeline** - GitHub Actions workflow deploys to Azure on push to main.
 
 ### Architecture Diagram
 
 ![Architecture Diagram](assets/arch.png)
+
+**Architecture Overview:**
+Standard web API architecture. JavaScript frontend makes HTTP requests to Django REST API backend. SQLite handles persistence, Gemini provides AI insights. API manages predictions, calculates Brier scores, and generates AI suggestions.
 
 ### Data Models & Services
 
@@ -138,20 +147,40 @@ python test_api.py
 
 **Docker** - Makes deployment consistent. Same container works locally and in production.
 
+**SQLite** - Simple for single-user deployment. No separate database server to manage. Data resets on Azure restart are acceptable for this demo/personal use case.
+
+### Alternatives Considered
+
+**Vue.js Frontend** - Considered for reactive state management but rejected as unnecessarily complex. Vanilla JS is sufficient.
+
+**Self-Hosted LLM** - Looked at running Llama on the cloud instance. Gemini is free, easier, and better performance without GPU overhead.
+
 ### Tradeoffs
 
 **Performance** - SQLite works fine for single-user but wouldn't scale for production multi-user.
 
-**Complexity** - Kept it simple - no Redis, no Celery, no build system. Just what's needed.
+**Complexity** - Kept it simple - no advanced features.
 
 **Cost** - Azure App Service runs about $25/month on the B1 tier.
 
 ### Security
 
-- API keys in environment variables only (`.env.example` template, actual keys never committed)
-- DRF serializers validate inputs
+**Input Validation:**
+- Description: 10-500 chars, required
+- Probability: 0.0-1.0 range
+- Resolve dates: future only
+- DRF serializers validate all inputs
+
+**API Security:**
+- API keys in environment variables (`.env.example` template)
+- Secrets never committed
 - CSRF protection enabled
-- No auth yet (single-user app)
+- DRF built-in protections
+
+**Data Privacy:**
+- Gemini processes predictions (Google privacy policy applies)
+- Single-user, no auth required
+- SQLite stored locally
 
 ### Limitations
 
@@ -165,12 +194,21 @@ python test_api.py
 
 ### What Works
 
-- Create predictions with confidence sliders
-- Click to resolve (happened/didn't happen)
-- View Brier score and calibration charts
-- AI suggestions for prediction wording
-- AI analysis of calibration patterns
+- Create predictions with confidence sliders (0-100%)
+- AI-generated prediction ideas that understand appropriate difficulty and avoid repeating past topics
+- Click predictions to resolve them (happened/didn't happen)
+- View Brier score and calibration charts analyzing accuracy
+- AI-powered insights explaining calibration performance and suggesting improvements
 
+### Screenshots
+
+**Home Page:**
+![Home Page](assets/home.png)
+*Prediction list with filter options (All/Pending/Resolved). Cards show description, confidence, date, and status. Click to resolve.*
+
+**Statistics Page:**
+![Statistics Page](assets/stats.png)
+*Brier score, calibration chart, and AI insights. Chart compares predicted vs. actual outcomes across confidence ranges.*
 ### Performance
 
 - Container: ~450MB, builds in 2-3 minutes
@@ -190,15 +228,14 @@ Automated tests cover creating, resolving, stats, and profile management. All CR
 - Data export (JSON/CSV)
 - Prediction categories and tags
 - Historical performance graphs
+- Email reminders for unresolved predictions
 
 **Technical improvements:**
-- Summary renders in Markdown
-- Summary AI bot can see raw data table
-- Add authentication for multi-user support
+- Authentication for multi-user support
 - Rate limiting on AI endpoints
 - Redis for caching stats
-- GitHub Actions CI/CD
 - Automated database backups
+- PostgreSQL migration for production
 
 ---
 
@@ -212,7 +249,3 @@ Automated tests cover creating, resolving, stats, and profile management. All CR
 ## License & Credits
 
 MIT License. Uses Django REST Framework (BSD), Google Generative AI (Apache 2.0), and vanilla JavaScript.
-
----
-
-**Built for better decision-making through systematic calibration tracking.**

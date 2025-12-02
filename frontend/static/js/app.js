@@ -88,12 +88,7 @@ function initPredictionForm() {
     });
 
     getSuggestionsBtn.addEventListener('click', async () => {
-        const description = document.getElementById('description').value;
-        if (!description.trim()) {
-            alert('Please enter a prediction description first');
-            return;
-        }
-        await getAISuggestions(description);
+        await getAISuggestions();
     });
 
     createForm.addEventListener('submit', async (e) => {
@@ -272,29 +267,48 @@ async function updateProfile() {
     }
 }
 
-async function getAISuggestions(description) {
+async function getAISuggestions() {
     const btn = document.getElementById('get-suggestions-btn');
     const suggestionsDiv = document.getElementById('ai-suggestions');
 
     btn.disabled = true;
-    btn.textContent = 'Getting suggestions...';
+    btn.textContent = 'Generating ideas...';
 
     try {
-        const response = await fetch(`${API_BASE_URL}/predictions/ai_suggest/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ description }),
-        });
+        const response = await fetch(`${API_BASE_URL}/predictions/ai_suggest/`);
 
         if (!response.ok) throw new Error('Failed to get AI suggestions');
 
         const data = await response.json();
 
+        // Render the 3 AI-generated suggestions as clickable cards
         suggestionsDiv.innerHTML = `
-            <h4>✨ AI Suggestions</h4>
-            <div style="white-space: pre-wrap;">${escapeHtml(data.suggestions)}</div>
+            <h4>✨ AI-Generated Prediction Ideas</h4>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                Click any suggestion to use it:
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                ${data.suggestions.map((suggestion, index) => `
+                    <div class="suggestion-card" style="
+                        padding: 1rem;
+                        border: 2px solid var(--border-color);
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                        background: var(--card-bg);
+                    "
+                    onmouseover="this.style.borderColor='var(--primary-color)'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='translateY(0)'"
+                    onclick="useSuggestion(${index}, ${escapeHtml(JSON.stringify(suggestion))})">
+                        <div style="font-weight: 500; margin-bottom: 0.5rem;">
+                            ${escapeHtml(suggestion.description)}
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                            Suggested confidence: ${suggestion.confidence}%
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
         `;
         suggestionsDiv.classList.remove('hidden');
     } catch (error) {
@@ -307,7 +321,20 @@ async function getAISuggestions(description) {
     }
 
     btn.disabled = false;
-    btn.textContent = 'Get AI Suggestions';
+    btn.textContent = 'Get AI Prediction Ideas';
+}
+
+// Function to use a suggestion (auto-fill the form)
+function useSuggestion(index, suggestion) {
+    document.getElementById('description').value = suggestion.description;
+    document.getElementById('probability').value = suggestion.confidence;
+    document.getElementById('probability-value').textContent = `${suggestion.confidence}%`;
+
+    // Hide suggestions after selection
+    document.getElementById('ai-suggestions').classList.add('hidden');
+
+    // Scroll to the form
+    document.getElementById('description').focus();
 }
 
 // Rendering

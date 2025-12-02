@@ -114,35 +114,64 @@ Keep it conversational and encouraging. Use simple percentages and comparisons."
         except Exception as e:
             return f"Error generating summary: {str(e)}"
 
-    def suggest_prediction_refinement(self, description):
+    def generate_prediction_suggestions(self, past_predictions=None):
         """
-        Suggest how to make a prediction more specific and measurable.
+        Generate 3 relevant prediction suggestions for the user.
 
         Args:
-            description (str): The prediction description
+            past_predictions (list): Optional list of past prediction descriptions
 
         Returns:
-            str: Suggestions for improvement
+            list: Three prediction suggestions as dictionaries with 'description' and 'confidence' keys
         """
-        prompt = f"""
-        This is a prediction someone wants to make:
+        past_context = ""
+        if past_predictions and len(past_predictions) > 0:
+            past_list = "\n".join([f"- {p}" for p in past_predictions[:10]])
+            past_context = f"\n\nUser's past predictions:\n{past_list}\n\nAvoid repeating these topics and try to match their style."
 
-        "{description}"
+        prompt = f"""You are helping someone track predictions to improve their calibration. Generate 3 interesting, specific predictions they should make.
 
-        Provide 2-3 SHORT, CONCISE suggestions (1-2 sentences each) to make this prediction:
-        1. More specific and measurable
-        2. Time-bound
-        3. Objectively verifiable
+Requirements for good predictions:
+- Specific and measurable (clear yes/no outcome)
+- Appropriate difficulty level (not too obvious, not impossible to know)
+- Time-bound (resolvable within days/weeks/months)
+- Relevant to a person's daily life, current events, or personal goals
+- Diverse topics (don't repeat similar themes){past_context}
 
-        Format: Use simple bullet points (•) without markdown formatting.
-        Keep it brief and actionable.
-        """
+Generate exactly 3 predictions. For each, provide:
+1. The prediction statement (1-2 sentences, specific and measurable)
+2. A suggested starting confidence level (as a percentage between 30-80%)
+
+Format your response as a JSON array like this:
+[
+  {{"description": "prediction text here", "confidence": 65}},
+  {{"description": "another prediction", "confidence": 50}},
+  {{"description": "third prediction", "confidence": 70}}
+]
+
+IMPORTANT: Return ONLY the JSON array, no other text or formatting."""
 
         try:
             response = self.model.generate_content(prompt)
-            return response.text
+            import json
+            # Try to parse JSON response
+            text = response.text.strip()
+            # Remove markdown code blocks if present
+            if text.startswith('```'):
+                text = text.split('```')[1]
+                if text.startswith('json'):
+                    text = text[4:]
+                text = text.strip()
+
+            suggestions = json.loads(text)
+            return suggestions[:3]  # Ensure we only return 3
         except Exception as e:
-            return f"Error generating suggestions: {str(e)}"
+            # Fallback suggestions if API fails
+            return [
+                {"description": "It will rain in my city this week", "confidence": 50},
+                {"description": "I will complete my main work project by the end of this month", "confidence": 70},
+                {"description": "A major tech company will announce a new product in the next 30 days", "confidence": 60}
+            ]
 
 
 # Singleton instance

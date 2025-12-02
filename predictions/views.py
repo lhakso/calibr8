@@ -85,20 +85,15 @@ class PredictionViewSet(viewsets.ModelViewSet):
 
         return Response(stats_data)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['get'])
     def ai_suggest(self, request):
-        """Get AI suggestions for improving a prediction description"""
-        description = request.data.get('description')
-
-        if not description:
-            return Response(
-                {'error': 'description is required'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+        """Get AI-generated prediction suggestions"""
         try:
+            # Get past predictions to provide context
+            past_predictions = Prediction.objects.all().values_list('description', flat=True)[:10]
+
             gemini = get_gemini_service()
-            suggestions = gemini.suggest_prediction_refinement(description)
+            suggestions = gemini.generate_prediction_suggestions(list(past_predictions))
             return Response({'suggestions': suggestions})
         except Exception as e:
             return Response(
