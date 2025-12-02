@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calibr8 - Prediction Tracker</title>
+    <link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Calibr8</h1>
+            <p class="tagline">Track your predictions and improve your calibration</p>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="predictions">My Predictions</button>
+            <button class="tab-btn" data-tab="stats">Statistics</button>
+            <button class="tab-btn" data-tab="profile">Profile</button>
+        </nav>
+
+        <!-- Predictions Tab -->
+        <section id="predictions-tab" class="tab-content active">
+            <div class="section-header">
+                <h2>My Predictions</h2>
+                <button id="new-prediction-btn" class="btn btn-primary">+ New Prediction</button>
+            </div>
+
+            <!-- New Prediction Form -->
+            <div id="prediction-form" class="form-card hidden">
+                <h3>Create New Prediction</h3>
+                <form id="create-prediction-form">
+                    <div class="form-group">
+                        <label for="description">What will happen?</label>
+                        <textarea id="description" name="description" required placeholder="E.g., It will rain tomorrow in Seattle"></textarea>
+                        <button type="button" id="get-suggestions-btn" class="btn btn-secondary btn-sm">Get AI Suggestions</button>
+                        <div id="ai-suggestions" class="ai-suggestions hidden"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="probability">Your confidence (%)</label>
+                        <input type="range" id="probability" name="probability" min="0" max="100" value="50" required>
+                        <span id="probability-value">50%</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="resolve_by">Resolve by (optional)</label>
+                        <input type="datetime-local" id="resolve_by" name="resolve_by">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Create Prediction</button>
+                        <button type="button" id="cancel-prediction-btn" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Predictions List -->
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="pending">Pending</button>
+                <button class="filter-btn" data-filter="resolved">Resolved</button>
+            </div>
+
+            <div id="predictions-list" class="predictions-list">
+                <div class="loading">Loading predictions...</div>
+            </div>
+        </section>
+
+        <!-- Stats Tab -->
+        <section id="stats-tab" class="tab-content">
+            <h2>Calibration Statistics</h2>
+            <div id="stats-content">
+                <div class="loading">Loading statistics...</div>
+            </div>
+        </section>
+
+        <!-- Profile Tab -->
+        <section id="profile-tab" class="tab-content">
+            <h2>Profile</h2>
+            <div id="profile-content">
+                <div class="loading">Loading profile...</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Prediction Detail Modal -->
+    <div id="prediction-modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="prediction-detail"></div>
+        </div>
+    </div>
+
+    <script src="static/js/app.js"></script>
+</body>
+</html>

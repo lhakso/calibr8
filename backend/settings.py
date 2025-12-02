@@ -143,6 +143,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Additional locations for static files
+STATICFILES_DIRS = [
+    BASE_DIR / 'frontend' / 'static',
+]
+
 # WhiteNoise configuration for serving static files in production
 STORAGES = {
     "default": {

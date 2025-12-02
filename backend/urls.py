@@ -16,8 +16,24 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
+from django.conf import settings
+from django.conf.urls.static import static
+from django.views.static import serve
+from django.http import FileResponse
+import os
+
+def serve_frontend(request):
+    """Serve the frontend index.html"""
+    frontend_path = os.path.join(settings.BASE_DIR, 'frontend', 'index.html')
+    return FileResponse(open(frontend_path, 'rb'), content_type='text/html')
 
 urlpatterns = [
+    path('', serve_frontend, name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('predictions.urls')),
 ]
+
+# Serve frontend static files
+if settings.DEBUG:
+    urlpatterns += static('/static/', document_root=os.path.join(settings.BASE_DIR, 'frontend', 'static'))
