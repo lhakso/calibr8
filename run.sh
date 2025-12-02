@@ -1,24 +1,35 @@
 #!/bin/bash
+# One-command launcher for Calibr8
 
-echo "Starting Calibr8 Web Version..."
-echo ""
-echo "1. Starting Django backend on http://localhost:8000"
-python manage.py runserver &
-DJANGO_PID=$!
+echo "🚀 Starting Calibr8..."
 
-echo "2. Starting frontend server on http://localhost:8080"
-cd frontend
-python -m http.server 8080 &
-FRONTEND_PID=$!
+# Check if Docker is available
+if command -v docker &> /dev/null; then
+    echo "Building Docker image..."
+    docker build -t calibr8-app .
 
-echo ""
-echo "✅ Calibr8 is running!"
-echo ""
-echo "Backend API:  http://localhost:8000/api/"
-echo "Frontend App: http://localhost:8080"
-echo ""
-echo "Press Ctrl+C to stop both servers"
+    echo "Starting Calibr8 container..."
+    docker run --rm -p 8000:8000 \
+        -e DEBUG="True" \
+        -e GEMINI_API_KEY="${GEMINI_API_KEY}" \
+        calibr8-app
+else
+    echo "Docker not found. Running with Python..."
 
-# Wait for Ctrl+C
-trap "kill $DJANGO_PID $FRONTEND_PID; exit" INT
-wait
+    # Activate virtual environment if it exists
+    if [ -d ".venv" ]; then
+        source .venv/bin/activate
+    fi
+
+    # Install dependencies
+    pip install -r requirements.txt
+
+    # Run migrations
+    python manage.py migrate
+
+    # Start server
+    echo ""
+    echo "✅ Calibr8 is running at http://localhost:8000"
+    echo ""
+    python manage.py runserver
+fi
